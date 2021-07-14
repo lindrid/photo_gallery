@@ -15,19 +15,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 private const val TAG = "Flickr"
 
-class Flickr {
-  private val api: FlickrApi
-
-  init {
-    val retrofit: Retrofit = Retrofit.Builder()
-      .baseUrl("https://www.flickr.com/")
-      // Factory is for convert okhttp3.ResponseBody to String (See FlickrApi)
-      .addConverterFactory(GsonConverterFactory.create())
-      .build()
-
-    api = retrofit.create(FlickrApi::class.java)
-  }
-
+class Flickr (private val api: FlickrApi) {
   fun fetchPhotos(): LiveData<List<GalleryItem>> {
     val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
     val flickrRequest: Call<FlickrResponse> = api.fetchPhotos()
