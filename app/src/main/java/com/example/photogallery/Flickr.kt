@@ -3,7 +3,6 @@ package com.example.photogallery
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.paging.PagedList
 import com.example.photogallery.api.FlickrApi
 import com.example.photogallery.api.FlickrResponse
 import com.example.photogallery.api.PhotoResponse
@@ -18,9 +17,9 @@ private const val TAG = "Flickr"
 
 class Flickr (private val api: FlickrApi) {
 
-  fun fetchPhotos(page: Int): LiveData<PagedList<GalleryItem>> {
+  fun fetchPhotos(): LiveData<List<GalleryItem>> {
     val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
-    val flickrRequest: Call<FlickrResponse> = api.fetchPhotos(page)
+    val flickrRequest: Call<FlickrResponse> = api.fetchPhotos()
 
     flickrRequest.enqueue(object : Callback<FlickrResponse> {
       override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
