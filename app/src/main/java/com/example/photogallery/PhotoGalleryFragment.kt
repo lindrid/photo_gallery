@@ -28,11 +28,16 @@ private const val TAG = "PhotoGalleryFragment"
 class PhotoGalleryFragment: Fragment() {
   private lateinit var photoRecyclerView: RecyclerView
   private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
+  private lateinit var thumbnailDownloader: ThumbnailDownloader<PhotoHolder>
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+    retainInstance = true
     photoGalleryViewModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
+
+    thumbnailDownloader = ThumbnailDownloader()
+    lifecycle.addObserver(thumbnailDownloader)
   }
 
   override fun onCreateView (inflater: LayoutInflater,
@@ -57,9 +62,7 @@ class PhotoGalleryFragment: Fragment() {
     )
   }
 
-  private class PhotoHolder(imageView: ImageView) :
-    RecyclerView.ViewHolder(imageView)
-  {
+  private class PhotoHolder(imageView: ImageView) : RecyclerView.ViewHolder(imageView) {
     val bindDrawable: (Drawable) -> Unit = imageView::setImageDrawable
   }
 
@@ -80,7 +83,13 @@ class PhotoGalleryFragment: Fragment() {
       val placeholder: Drawable = ContextCompat.getDrawable(requireContext(),
         R.drawable.bill_up_close) ?: ColorDrawable()
       holder.bindDrawable(placeholder)
+      thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
     }
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    lifecycle.removeObserver(thumbnailDownloader)
   }
 
   companion object {
