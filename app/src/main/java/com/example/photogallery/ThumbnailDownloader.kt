@@ -100,6 +100,7 @@ class ThumbnailDownloader<in T> (
     val url = requestMap[target] ?: return
     val bitmap = flickr.fetchPhoto(url) ?: return
 
+    // это то, что должно быть выполнено в основном потоке (main thread или UI thread)
     responseHandler.post(Runnable {
       if (requestMap[target] != url || hasQuit) {
         return@Runnable
