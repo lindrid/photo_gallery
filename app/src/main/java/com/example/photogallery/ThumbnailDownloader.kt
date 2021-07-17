@@ -15,6 +15,12 @@ import java.util.concurrent.ConcurrentHashMap
 private const val TAG = "ThumbnailDownloader"
 private const val MESSAGE_DOWNLOAD = 0
 
+// понятно про многопоточность с помощью HandlerThread, Handler и Looper тут:
+// https://ru.coursera.org/lecture/android-multithreading-and-network/hamer-j18yz
+
+// в пред-предыдущем коммите (который, 577) не хватало start() в функции setup, а также
+// Handler(looper) , а не просто Hanler(). И все заработало бы.
+
 // responseHandler это Handler из главного потока, связанный с Looper из главного потока
 // второй параметр - слушатель для передачи ответов (загруженных изображений)
 // запрашивающей стороне (главному потоку)
@@ -60,7 +66,6 @@ class ThumbnailDownloader<in T> (
   fun queueThumbnail (target: T, url: String) {
     Log.i (TAG, "Got a url: $url")
     requestMap[target] = url
-    requestHandler = Handler()
     requestHandler.obtainMessage(MESSAGE_DOWNLOAD, target).sendToTarget()
   }
 
@@ -75,7 +80,7 @@ class ThumbnailDownloader<in T> (
   // обработчик прикреплен к looper фонового потока.
   @SuppressLint("HandlerLeak")
   override fun onLooperPrepared() {
-    requestHandler = object : Handler() {
+    requestHandler = object : Handler(looper) {
       override fun handleMessage(msg: Message) {
         if (msg.what == MESSAGE_DOWNLOAD) {
           val target = msg.obj as T
