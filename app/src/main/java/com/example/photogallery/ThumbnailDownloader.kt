@@ -23,7 +23,7 @@ private const val MESSAGE_DOWNLOAD = 0
 
 // responseHandler это Handler из главного потока, связанный с Looper из главного потока
 // второй параметр - слушатель для передачи ответов (загруженных изображений)
-// запрашивающей стороне (главному потоку) asasdasd
+// запрашивающей стороне (главному потоку)
 class ThumbnailDownloader<in T> (
     private val responseHandler: Handler,
     private val onThumbnailDownloaded: (T, Bitmap) -> Unit
@@ -38,7 +38,8 @@ class ThumbnailDownloader<in T> (
     @OnLifecycleEvent (Lifecycle.Event.ON_CREATE)
     fun setup() {
       Log.i (TAG,"Starting background thread")
-      start() // после этого в функции onLooperPrepared() инициализируется requestHandler
+      start() // после этого запускается onLooperPrepared() и инициализируется requestHandler
+      // Все это происходит еще ДО того, как во фрагменте вызывается функция queueThumbnail(...)
       looper
     }
 
