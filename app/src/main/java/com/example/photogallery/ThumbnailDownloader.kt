@@ -38,7 +38,7 @@ class ThumbnailDownloader<in T> (
     @OnLifecycleEvent (Lifecycle.Event.ON_CREATE)
     fun setup() {
       Log.i (TAG,"Starting background thread")
-      start()
+      start() // после этого в функции onLooperPrepared() инициализируется requestHandler
       looper
     }
 
@@ -66,6 +66,10 @@ class ThumbnailDownloader<in T> (
   fun queueThumbnail (target: T, url: String) {
     Log.i (TAG, "Got a url: $url")
     requestMap[target] = url
+    // requestHandler уже был инициализирован после вызова start() в setup(), которая
+    // в свою очередь была вызвана при создании фрагмента
+    // а здесь мы просто загоняем сообщение - скачай мне картинку - в общий пул сообщений
+    // по которому бегает looper
     requestHandler.obtainMessage(MESSAGE_DOWNLOAD, target).sendToTarget()
   }
 
