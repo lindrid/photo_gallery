@@ -23,7 +23,7 @@ private const val MESSAGE_DOWNLOAD = 0
 
 // responseHandler это Handler из главного потока, связанный с Looper из главного потока
 // второй параметр - слушатель для передачи ответов (загруженных изображений)
-// запрашивающей стороне (главному потоку)
+// запрашивающей стороне (главному потоку) asasdasd
 class ThumbnailDownloader<in T> (
     private val responseHandler: Handler,
     private val onThumbnailDownloaded: (T, Bitmap) -> Unit
