@@ -89,9 +89,6 @@ class PhotoGalleryFragment: Fragment() {
 
     override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
       val galleryItem = galleryItems[position]
-      /*val placeholder: Drawable = ContextCompat.getDrawable(requireContext(),
-        R.drawable.bill_up_close) ?: ColorDrawable()
-      holder.bindDrawable(placeholder)*/
       thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
     }
   }

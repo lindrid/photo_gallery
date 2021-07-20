@@ -98,7 +98,11 @@ class ThumbnailDownloader<in T> (
 
   private fun handleRequest(target: T) {
     val url = requestMap[target] ?: return
-    val bitmap = flickr.fetchPhoto(url) ?: return
+    var bitmap: Bitmap? = Cache.instance.retrieveBitmapFromCache(url)
+    if (bitmap == null) {
+      bitmap = flickr.fetchPhoto(url) ?: return
+      Cache.instance.saveBitmapToCache(url, bitmap)
+    }
 
     // это то, что должно быть выполнено в основном потоке (main thread или UI thread)
     responseHandler.post(Runnable {
