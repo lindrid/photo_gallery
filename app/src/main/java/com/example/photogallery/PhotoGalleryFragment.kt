@@ -8,11 +8,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -37,6 +36,7 @@ class PhotoGalleryFragment: Fragment() {
     super.onCreate(savedInstanceState)
 
     retainInstance = true
+    setHasOptionsMenu(true) // регистрируем фрагмент для получения обратных вызовов меню
     photoGalleryViewModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
 
     val responseHandler = Handler(Looper.getMainLooper())
@@ -69,6 +69,31 @@ class PhotoGalleryFragment: Fragment() {
         photoRecyclerView.adapter = PhotoAdapter(galleryItems)
       }
     )
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    super.onCreateOptionsMenu(menu, inflater)
+    inflater.inflate(R.menu.fragment_photo_gallery, menu)
+
+    val searchItem : MenuItem = menu.findItem (R.id.menu_item_search)
+    val searchView = searchItem.actionView as SearchView
+
+    searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
+      override fun onQueryTextSubmit(query: String?): Boolean {
+        Log.d (TAG, "QueryTextSubmit: $query")
+        query?.let {
+          photoGalleryViewModel.fetchPhotos(it)
+        }
+        return true
+      }
+
+      override fun onQueryTextChange(newText: String?): Boolean {
+        Log.d (TAG, "QueryTextChange: $newText")
+        return false // никак не обрабатываем действие ввода символов поискового запроса
+      }
+
+    })
   }
 
   private class PhotoHolder(imageView: ImageView) : RecyclerView.ViewHolder(imageView) {
