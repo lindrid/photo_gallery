@@ -1,25 +1,32 @@
 package com.example.photogallery
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.*
 import com.example.photogallery.api.ApiSingleton
 
-class PhotoGalleryViewModel: ViewModel() {
+class PhotoGalleryViewModel (private val app: Application): AndroidViewModel(app) {
   private val flickr: Flickr = Flickr(ApiSingleton.get().flickr)
   val galleryItemLiveData: LiveData<List<GalleryItem>>
   private val mutableSearchTerm = MutableLiveData<String>()
 
+  val searchTerm: String
+    get() = mutableSearchTerm.value ?: ""
+
   init {
-    mutableSearchTerm.value = "batman"
+    mutableSearchTerm.value = QueryPreferences.getQuery(app)
     // если введен новый searchTerm, то произойдет запрос и будут изменены скачанные картинки
     galleryItemLiveData = Transformations.switchMap(mutableSearchTerm) { searchTerm ->
-      flickr.searchPhotos(searchTerm)
+      if (searchTerm.isBlank()) {
+        flickr.fetchPhotos()
+      }
+      else {
+        flickr.searchPhotos(searchTerm)
+      }
     }
   }
 
-  fun fetchPhotos (searchTerm : String = "") {
-    mutableSearchTerm.value = searchTerm
+  fun fetchPhotos (query : String = "") {
+    QueryPreferences.storeQuery(app, query)
+    mutableSearchTerm.value = query
   }
 }

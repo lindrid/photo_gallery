@@ -18,4 +18,5 @@ object QueryPreferences {
       .putString(SEARCH_QUERY_PARAM_NAME, query)
     .apply()
   }
+
 }

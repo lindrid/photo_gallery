@@ -94,6 +94,20 @@ class PhotoGalleryFragment: Fragment() {
       }
 
     })
+
+    searchView.setOnSearchClickListener {
+      searchView.setQuery (photoGalleryViewModel.searchTerm, false)
+    }
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      R.id.menu_item_clear -> {
+        photoGalleryViewModel.fetchPhotos("")
+        true
+      }
+      else -> super.onOptionsItemSelected(item)
+    }
   }
 
   private class PhotoHolder(imageView: ImageView) : RecyclerView.ViewHolder(imageView) {
