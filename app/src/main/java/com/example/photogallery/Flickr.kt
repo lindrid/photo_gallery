@@ -19,13 +19,30 @@ private const val TAG = "Flickr"
 class Flickr (private val api: FlickrApi) {
 
   fun fetchPhotos() : LiveData<List<GalleryItem>> {
-    return fetchPhotoMetadata(api.fetchPhotos())
+    return fetchPhotoMetadata(fetchPhotosRequest())
   }
 
-  fun searchPhotos(text: String) : LiveData<List<GalleryItem>> {
-    return fetchPhotoMetadata(api.searchPhotos(text))
+  fun searchPhotos(query: String) : LiveData<List<GalleryItem>> {
+    return fetchPhotoMetadata(searchPhotosRequest(query))
   }
 
+  fun fetchPhotosRequest(): Call<FlickrResponse> {
+    return api.fetchPhotos()
+  }
+
+  fun searchPhotosRequest(query: String): Call<FlickrResponse> {
+    return api.searchPhotos(query)
+  }
+
+  @WorkerThread
+  fun fetchPhoto (url: String): Bitmap? {
+    val response: Response<ResponseBody> = api.fetchUrlBytes(url).execute()
+    val bitmap = response.body()?.byteStream()?.use(BitmapFactory::decodeStream)
+    Log.i (TAG, "Decoded bitmap = $bitmap from Response = $response")
+    return bitmap
+  }
+
+  /* ****** private ****** */
   private fun fetchPhotoMetadata (request: Call<FlickrResponse>) :
       LiveData<List<GalleryItem>> {
 
@@ -49,13 +66,5 @@ class Flickr (private val api: FlickrApi) {
     })
 
     return responseLiveData
-  }
-
-  @WorkerThread
-  fun fetchPhoto (url: String): Bitmap? {
-    val response: Response<ResponseBody> = api.fetchUrlBytes(url).execute()
-    val bitmap = response.body()?.byteStream()?.use(BitmapFactory::decodeStream)
-    Log.i (TAG, "Decoded bitmap = $bitmap from Response = $response")
-    return bitmap
   }
 }
