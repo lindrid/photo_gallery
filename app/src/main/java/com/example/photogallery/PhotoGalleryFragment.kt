@@ -18,18 +18,17 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
+import androidx.work.*
 import com.example.photogallery.api.FlickrApi
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "PhotoGalleryFragment"
+private const val POLL_WORK = "poll_work"
 
 class PhotoGalleryFragment: Fragment() {
   private lateinit var photoRecyclerView: RecyclerView
@@ -50,20 +49,6 @@ class PhotoGalleryFragment: Fragment() {
     }
 
     lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
-
-    // будем требовать выполнения этих условий
-    // перед работой нашего PollWorker
-    // в условия входит: требуется безлимитная сеть
-    val constraints = Constraints.Builder()
-      .setRequiredNetworkType(NetworkType.UNMETERED)
-      .build()
-
-    // выполнится один раз
-    val workRequest = OneTimeWorkRequest
-      .Builder (PollWorker::class.java)
-      .setConstraints(constraints)
-      .build()
-    WorkManager.getInstance().enqueue(workRequest)
   }
 
   override fun onCreateView (inflater: LayoutInflater,
@@ -117,6 +102,16 @@ class PhotoGalleryFragment: Fragment() {
     searchView.setOnSearchClickListener {
       searchView.setQuery (photoGalleryViewModel.searchTerm, false)
     }
+
+    val toggleItem = menu.findItem(R.id.menu_item_toggle_polling)
+    val isPolling = QueryPreferences.isPolling(requireContext())
+    val toggleItemTitle = if (isPolling) {
+      R.string.stop_polling
+    }
+    else {
+      R.string.start_polling
+    }
+    toggleItem.setTitle(toggleItemTitle)
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -125,8 +120,62 @@ class PhotoGalleryFragment: Fragment() {
         photoGalleryViewModel.fetchPhotos("")
         true
       }
+      R.id.menu_item_toggle_polling -> {
+        if (QueryPreferences.isPolling(requireContext())) {
+          stopPolling()
+        }
+        else {
+          startPolling(15, TimeUnit.MINUTES)
+        }
+        activity?.invalidateOptionsMenu()
+        true
+      }
       else -> super.onOptionsItemSelected(item)
     }
+  }
+
+  companion object {
+    fun newInstance() = PhotoGalleryFragment()
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    lifecycle.removeObserver(thumbnailDownloader.fragmentLifecycleObserver)
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    viewLifecycleOwner.lifecycle.removeObserver(thumbnailDownloader.viewLifecycleObserver)
+  }
+
+  // ==== private ==== \\
+
+  private fun stopPolling() {
+    WorkManager.getInstance().cancelUniqueWork(POLL_WORK)
+    QueryPreferences.setPolling(requireContext(), false)
+  }
+
+  private fun startPolling(repeatInterval: Long,  repeatIntervalTimeUnit: TimeUnit) {
+    // будем требовать выполнения этих условий
+    // перед работой нашего PollWorker
+    // в условия входит: требуется безлимитная сеть
+    val constraints = Constraints.Builder()
+      .setRequiredNetworkType(NetworkType.UNMETERED)
+      .build()
+
+    val periodicRequest = PeriodicWorkRequest
+      .Builder (PollWorker::class.java, repeatInterval, repeatIntervalTimeUnit)
+      .setConstraints(constraints)
+      .build()
+
+    WorkManager.getInstance().enqueueUniquePeriodicWork (
+      POLL_WORK,
+      // KEEP означает - оставляем старый запрос, если запрос с именем POLL_WORK уже существует
+      ExistingPeriodicWorkPolicy.KEEP,
+      periodicRequest
+    )
+
+    QueryPreferences.setPolling(requireContext(), true)
   }
 
   private class PhotoHolder(imageView: ImageView) : RecyclerView.ViewHolder(imageView) {
@@ -151,17 +200,4 @@ class PhotoGalleryFragment: Fragment() {
     }
   }
 
-  override fun onDestroy() {
-    super.onDestroy()
-    lifecycle.removeObserver(thumbnailDownloader.fragmentLifecycleObserver)
-  }
-
-  override fun onDestroyView() {
-    super.onDestroyView()
-    viewLifecycleOwner.lifecycle.removeObserver(thumbnailDownloader.viewLifecycleObserver)
-  }
-
-  companion object {
-    fun newInstance() = PhotoGalleryFragment()
-  }
 }
