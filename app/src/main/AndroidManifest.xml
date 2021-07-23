@@ -1,8 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.photogallery">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.photogallery"
+    tools:ignore="ExtraText">
+
+    // Одна из проблем с использованием широковещательной рассылки заключается в том,
+    // что любой компонент в системе может прослушивать ее или инициировать ваши приемники.
+    // И то и другое - это несанкционированное вмешательство в ваши личные дела и его можно
+    // предотвратить, для этого нужно использовать разрешение.
+
+    // это пользовательское разрешение, которое я буду использовать для того,
+    // чтобы ссылаться на разрешение в другом месте в манефесте, а также из кода Kotlin,
+    // когда я буду отправлять приемнику широковещательный интент.
+    // применение разрешения означает, что только те компоненты, которые запросили (и получили)
+    // разрешение, могу передавать трансляции приемнику.
+    <permission android:name="com.example.photogallery.PRIVATE"
+                android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="com.example.photogallery.PRIVATE"/>
 
     <application
         android:name=".PhotoGalleryApplication"
@@ -12,12 +28,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotoGallery">
+
         <activity android:name=".PhotoGalleryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        // exported = false говорит о том, что внешние приложения не смогут пользоваться
+        // широковещательной рассылкой и приемом моих собственных broadcast рассылок и приемников
+        <receive android:name=".NotificationReceiver"
+                android:permission="com.example.photogallery.PRIVATE"
+                android:exported="false"
+        >
+            <intent-filter>
+                <action android:name="com.example.photogallery.SHOW_NOTIFICATION"/>
+            </intent-filter>
+        </receive>
+
     </application>
 
 </manifest>

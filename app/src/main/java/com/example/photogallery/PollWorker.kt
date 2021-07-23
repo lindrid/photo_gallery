@@ -2,6 +2,7 @@ package com.example.photogallery
 
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -51,9 +52,14 @@ class PollWorker (private val context: Context, workerParams: WorkerParameters):
       Log.i(TAG, "Got a new result: $resultId")
       QueryPreferences.setLastResultId(context, resultId)
       notifyUserAboutNewPhotos()
+      context.sendBroadcast(Intent(ACTION_SHOW_NOTIFICATION))
     }
 
     return Result.success()
+  }
+
+  companion object {
+    const val ACTION_SHOW_NOTIFICATION = "com.example.photogallery.SHOW_NOTIFICATION"
   }
 
 
