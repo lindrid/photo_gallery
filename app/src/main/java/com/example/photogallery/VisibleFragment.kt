@@ -1,20 +1,28 @@
 package com.example.photogallery
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 
+private const val TAG = "VisibleFragment"
+
 abstract class VisibleFragment: Fragment() {
 
+  // данный динамичекий приемник выполнится РАНЬШЕ автономного приемника из Манифеста,
+  // потому что, приоритет у автономного приемника установлен самый низкий (-999)
+  // это нужно для того, чтобы не показывать уведомление пользователю, когда пользователь
+  // находится и запущенной программе, поэтому динамический приемник будет отменять
+  // дальнейший сигнал и он не будет доходить до автономного приемника, который и показывает
+  // уведомление в меню телефона
   private val onShowNotification = object : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-      Toast.makeText (requireContext(),
-        "Got a broadcast: ${intent?.action}",
-        Toast.LENGTH_LONG
-      ).show()
+      Log.i(TAG, "canceling notification")
+      resultCode = Activity.RESULT_CANCELED
     }
   }
 

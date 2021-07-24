@@ -61,10 +61,15 @@ class PollWorker (private val context: Context, workerParams: WorkerParameters):
   companion object {
     const val ACTION_SHOW_NOTIFICATION = "com.example.photogallery.SHOW_NOTIFICATION"
     const val PERMISSION_PRIVATE = "com.example.photogallery.PRIVATE"
+    const val REQUEST_CODE = "REQUEST_CODE"
+    const val NOTIFICATION = "NOTIFICATION"
   }
 
 
   private fun notifyUserAboutNewPhotos() {
+    // данные интенты нужны, чтобы при нажатии по уведомлению о новых фотографиях,
+    // которое получит пользователь, произойдет запуск PhotoGalleryActivity
+    // и это возможно только при установке .setContentIntent(pendintIntent) для Notification.Builder
     val intent = PhotoGalleryActivity.newIntent(context)
     val pendintIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
@@ -83,9 +88,21 @@ class PollWorker (private val context: Context, workerParams: WorkerParameters):
       .setContentIntent(pendintIntent)
       .setAutoCancel(true)
       .build()
-    val notificationManager = NotificationManagerCompat.from(context)
 
-    notificationManager.notify(0, notification)
+    val intentForBroadcast = Intent(ACTION_SHOW_NOTIFICATION).apply {
+      putExtra(REQUEST_CODE, 0)
+      putExtra(NOTIFICATION, notification)
+    }
+
+    // шлём упорядоченный широковещательный сигнал, это значит
+    // что приемники получат и обработают его в установленном порядке:
+    // сначала динамический, потом автономный, потому что у автономного установлен
+    // самый низкий приоритет (-999)
+    // это нужно для того, чтобы не показывать уведомление пользователю, когда пользователь
+    // находится и так в ней, поэтому динамический приемник будет отменять дальнейший сигнал
+    // и он не будет доходить до автономного приемника, который и показывает
+    // уведомление в меню телефона
+    context.sendOrderedBroadcast(intentForBroadcast, PERMISSION_PRIVATE)
   }
 
 }
