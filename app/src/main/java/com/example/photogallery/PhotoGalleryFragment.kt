@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
 private const val TAG = "PhotoGalleryFragment"
 private const val POLL_WORK = "poll_work"
 
-class PhotoGalleryFragment: Fragment() {
+class PhotoGalleryFragment: VisibleFragment() {
 
   private lateinit var photoRecyclerView: RecyclerView
   private lateinit var photoGalleryViewModel: PhotoGalleryViewModel

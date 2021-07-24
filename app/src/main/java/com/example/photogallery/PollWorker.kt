@@ -52,7 +52,7 @@ class PollWorker (private val context: Context, workerParams: WorkerParameters):
       Log.i(TAG, "Got a new result: $resultId")
       QueryPreferences.setLastResultId(context, resultId)
       notifyUserAboutNewPhotos()
-      context.sendBroadcast(Intent(ACTION_SHOW_NOTIFICATION))
+      context.sendBroadcast(Intent(ACTION_SHOW_NOTIFICATION), PERMISSION_PRIVATE)
     }
 
     return Result.success()
@@ -60,6 +60,7 @@ class PollWorker (private val context: Context, workerParams: WorkerParameters):
 
   companion object {
     const val ACTION_SHOW_NOTIFICATION = "com.example.photogallery.SHOW_NOTIFICATION"
+    const val PERMISSION_PRIVATE = "com.example.photogallery.PRIVATE"
   }
 
 

@@ -38,14 +38,14 @@
 
         // exported = false говорит о том, что внешние приложения не смогут пользоваться
         // широковещательной рассылкой и приемом моих собственных broadcast рассылок и приемников
-        <receive android:name=".NotificationReceiver"
+        <receiver android:name=".NotificationReceiver"
                 android:permission="com.example.photogallery.PRIVATE"
                 android:exported="false"
         >
             <intent-filter>
                 <action android:name="com.example.photogallery.SHOW_NOTIFICATION"/>
             </intent-filter>
-        </receive>
+        </receiver>
 
     </application>
 
