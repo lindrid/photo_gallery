@@ -42,7 +42,8 @@
                 android:permission="com.example.photogallery.PRIVATE"
                 android:exported="false"
         >
-            <intent-filter>
+            // задаем самый низкий приоритет нашему автономному приемнику
+            <intent-filter android:priority="-999">
                 <action android:name="com.example.photogallery.SHOW_NOTIFICATION"/>
             </intent-filter>
         </receiver>
