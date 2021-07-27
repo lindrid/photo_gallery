@@ -36,6 +36,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".PhotoPageActivity"/>
+
         // exported = false говорит о том, что внешние приложения не смогут пользоваться
         // широковещательной рассылкой и приемом моих собственных broadcast рассылок и приемников
         <receiver android:name=".NotificationReceiver"

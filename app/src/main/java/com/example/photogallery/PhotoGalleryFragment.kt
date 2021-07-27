@@ -1,5 +1,6 @@
 package com.example.photogallery
 
+import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -179,8 +180,25 @@ class PhotoGalleryFragment: VisibleFragment() {
     QueryPreferences.setPolling(requireContext(), true)
   }
 
-  private class PhotoHolder(imageView: ImageView) : RecyclerView.ViewHolder(imageView) {
+  private inner class PhotoHolder(imageView: ImageView) : RecyclerView.ViewHolder(imageView),
+    View.OnClickListener
+  {
+    private lateinit var galleryItem: GalleryItem
     val bindDrawable: (Drawable) -> Unit = imageView::setImageDrawable
+
+    init {
+      itemView.setOnClickListener(this)
+    }
+
+    fun bindGalleryItem (item: GalleryItem) {
+      galleryItem = item
+    }
+
+    override fun onClick(v: View?) {
+      val intent = PhotoPageActivity.newIntent(requireContext(), galleryItem.photoPageUri)
+      Log.i (TAG, "uri: ${galleryItem.photoPageUri}")
+      startActivity(intent)
+    }
   }
 
   private inner class PhotoAdapter(private val galleryItems: List<GalleryItem>):
@@ -197,6 +215,7 @@ class PhotoGalleryFragment: VisibleFragment() {
 
     override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
       val galleryItem = galleryItems[position]
+      holder.bindGalleryItem(galleryItem)
       thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
     }
   }
