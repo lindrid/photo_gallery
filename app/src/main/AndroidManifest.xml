@@ -36,7 +36,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".PhotoPageActivity"/>
+        /*  данный configChanges позволит PhotoPageActivity(или WebView) не загружать заново
+            картинку при повороте телефона. Более подробно на странице 665 - Опасности при
+            обработке изменений конфигурации */
+        <activity android:name=".PhotoPageActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
 
         // exported = false говорит о том, что внешние приложения не смогут пользоваться
         // широковещательной рассылкой и приемом моих собственных broadcast рассылок и приемников
