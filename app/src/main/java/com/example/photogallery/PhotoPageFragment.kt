@@ -65,6 +65,16 @@ class PhotoPageFragment : VisibleFragment() {
     return view
   }
 
+  fun webViewGoBack() : Boolean {
+    return if (webView.canGoBack()) {
+      webView.goBack()
+      true
+    }
+    else {
+      false
+    }
+  }
+
   companion object {
     fun newInstance (uri: Uri) : PhotoPageFragment {
       return PhotoPageFragment().apply {
